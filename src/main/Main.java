@@ -1,3 +1,11 @@
+package main;
+
+import history.TaskManager;
+import task.Epic;
+import task.Status;
+import task.Subtask;
+import task.Task;
+
 import java.util.ArrayList;
 
 public class Main {
@@ -12,7 +20,7 @@ public class Main {
 
         // Создание эпика с подзадачами
         ArrayList<Integer> subtaskIds = new ArrayList<>();
-        Epic epic1 = new Epic("Задание на работе", "Выполнть важное задание", Status.NEW, subtaskIds);
+        Epic epic1 = new Epic("Задание на работе", "Выполнть важное задание");
         taskManager.addEpic(epic1);
 
         Subtask subtask1 = new Subtask("Сделать фотографии", "Подготовить фотографии",
