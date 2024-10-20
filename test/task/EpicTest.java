@@ -1,6 +1,7 @@
 package task;
 
-import history.InMemoryTaskManager;
+import history.Managers;
+import history.TaskManager;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -21,7 +22,7 @@ class EpicTest {
 
     @Test
     void epicShouldNotBeAddedAsSubtaskToItself() {
-        InMemoryTaskManager manager = new InMemoryTaskManager();
+        TaskManager manager = Managers.getDefault();
         Epic epic1 = new Epic("Эпик 1", "Описание 1");
         manager.addEpic(epic1);
 

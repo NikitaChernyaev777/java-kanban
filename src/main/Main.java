@@ -1,6 +1,7 @@
 package main;
 
-import history.InMemoryTaskManager;
+import history.Managers;
+import history.TaskManager;
 import task.Epic;
 import task.Status;
 import task.Subtask;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
+        TaskManager taskManager = Managers.getDefault();
 
         // Создание задач
         Task task1 = new Task("Ремонт", "Подготовиться к ремонту", Status.NEW);
@@ -65,7 +66,7 @@ public class Main {
     }
 
     // Метод для вывода всех задач, эпиков, подзадач и истории
-    private static void printAllTasks(InMemoryTaskManager manager) {
+    private static void printAllTasks(TaskManager manager) {
         System.out.println("Задачи:");
         for (Task task : manager.getListOfAllTasks()) {
             System.out.println(task);

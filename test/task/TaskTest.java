@@ -1,6 +1,7 @@
 package task;
 
-import history.InMemoryTaskManager;
+import history.Managers;
+import history.TaskManager;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,7 +21,7 @@ class TaskTest {
     @Test
     void taskStatusShouldNotChangeAfterAdditionToManager() {
         Task task1 = new Task("Задача 1", "Описание 1", Status.NEW);
-        InMemoryTaskManager manager = new InMemoryTaskManager();
+        TaskManager manager = Managers.getDefault();
         manager.addTask(task1);
 
         Task retrievedTask = manager.getTaskById(task1.getId());

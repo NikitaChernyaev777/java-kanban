@@ -7,11 +7,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class ManagersTest {
 
     @Test
-    void managersShouldReturnInitializedInstances() {
+    void taskManagerShouldBeInitialized() {
         TaskManager taskManager = Managers.getDefault();
-        HistoryManager historyManager = Managers.getDefaultHistory();
 
         assertNotNull(taskManager, "TaskManager должен быть проинициализирован");
+    }
+
+    @Test
+    void historyManagerShouldBeInitialized() {
+        HistoryManager historyManager = Managers.getDefaultHistory();
+
         assertNotNull(historyManager, "HistoryManager должен быть проинициализирован");
     }
 }

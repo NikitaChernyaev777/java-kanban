@@ -1,5 +1,6 @@
 package history;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import task.Status;
 import task.Task;
@@ -10,10 +11,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryHistoryManagerTest {
 
+    private HistoryManager historyManager;
+    private Task task1;
+
+    @BeforeEach
+    void setUp() {
+        historyManager = Managers.getDefaultHistory();
+        task1 = new Task("Задача 1", "Описание 1", Status.NEW);
+    }
+
     @Test
     void shouldAddTaskToHistory() {
-        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
-        Task task1 = new Task("Задача 1", "Описание 1", Status.NEW);
         historyManager.add(task1);
 
         List<Task> history = historyManager.getHistory();
@@ -24,7 +32,6 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void shouldNotExceedMaxSize() {
-        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
         for (int i = 0; i < 12; i++) {
             Task task = new Task("Тестовая задача " + i, "Тестовое описание", Status.NEW);
             historyManager.add(task);
@@ -37,7 +44,6 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void shouldReturnEmptyHistoryIfNoTasks() {
-        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
         List<Task> history = historyManager.getHistory();
 
         assertTrue(history.isEmpty(), "История должна быть пустой, если задачи не добавлены");
@@ -45,15 +51,11 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void shouldRetainPreviousTaskVersionInHistory() {
-        InMemoryHistoryManager historyManager = new InMemoryHistoryManager();
-        Task task1 = new Task("Задача 1", "Описание 1", Status.NEW);
-
         historyManager.add(task1);
         historyManager.add(task1);
 
         List<Task> history = historyManager.getHistory();
 
-        // Ожидаем, что история содержит две записи для одной и той же задачи
         assertEquals(2, history.size(),
                 "История должна содержать две записи для одной и той же задачи");
         assertEquals(task1, history.get(0), "Первая запись в истории должна быть task1");
