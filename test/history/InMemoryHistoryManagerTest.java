@@ -12,12 +12,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class InMemoryHistoryManagerTest {
 
     private HistoryManager historyManager;
-    private Task task1;
+    private Task task1, task2;
 
     @BeforeEach
     void setUp() {
         historyManager = Managers.getDefaultHistory();
         task1 = new Task("Задача 1", "Описание 1", Status.NEW);
+        task1.setId(1);
+        task2 = new Task("Задача 2", "Описание 2", Status.NEW);
+        task2.setId(2);
     }
 
     @Test
@@ -31,34 +34,37 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
-    void shouldNotExceedMaxSize() {
-        for (int i = 0; i < 12; i++) {
-            Task task = new Task("Тестовая задача " + i, "Тестовое описание", Status.NEW);
-            historyManager.add(task);
-        }
+    void shouldUpdateHistoryWhenTaskViewedAgain() {
+        historyManager.add(task1);
+        historyManager.add(task1);
 
         List<Task> history = historyManager.getHistory();
 
-        assertEquals(10, history.size(), "История должна содержать не более 10 задач");
+        assertEquals(1, history.size(), "История должна содержать только одну запись для "
+                + "уникальной задачи");
+        assertEquals(task1, history.getFirst(), "Запись в истории должна быть task1");
     }
 
     @Test
-    void shouldReturnEmptyHistoryIfNoTasks() {
+    void shouldRemoveTaskFromHistory() {
+        historyManager.add(task1);
+        historyManager.remove(task1.getId());
+
         List<Task> history = historyManager.getHistory();
 
-        assertTrue(history.isEmpty(), "История должна быть пустой, если задачи не добавлены");
+        assertTrue(history.isEmpty(), "История должна быть пустой после удаления задачи");
     }
 
     @Test
-    void shouldRetainPreviousTaskVersionInHistory() {
+    void shouldHandleMultipleTasksCorrectly() {
         historyManager.add(task1);
-        historyManager.add(task1);
+        historyManager.add(task2);
 
         List<Task> history = historyManager.getHistory();
 
         assertEquals(2, history.size(),
-                "История должна содержать две записи для одной и той же задачи");
+                "История должна содержать две задачи");
         assertEquals(task1, history.get(0), "Первая запись в истории должна быть task1");
-        assertEquals(task1, history.get(1), "Вторая запись в истории также должна быть task1");
+        assertEquals(task2, history.get(1), "Вторая запись в истории должна быть task2");
     }
 }
