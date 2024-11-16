@@ -7,9 +7,9 @@ import java.util.*;
 public class InMemoryHistoryManager implements HistoryManager {
 
     private static class Node {
-        Task task;
-        Node prev;
-        Node next;
+        private final Task task;
+        private Node prev;
+        private Node next;
 
         Node(Task task) {
             this.task = task;
