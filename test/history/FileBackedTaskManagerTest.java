@@ -20,10 +20,22 @@ class FileBackedTaskManagerTest {
     private Path tempFile;
     private FileBackedTaskManager taskManager;
 
+    private Task task;
+    private Epic epic;
+    private Subtask subtask;
+
     @BeforeEach
     void setUp() throws IOException {
         tempFile = Files.createTempFile("tasks", ".csv");
         taskManager = new FileBackedTaskManager(tempFile);
+
+        task = new Task("Задача 1", "Описание задачи 1", Status.NEW);
+        task.setId(1);
+        epic = new Epic("Эпик 1", "Описание эпика 1");
+        epic.setId(2);
+        subtask = new Subtask("Подзадача 1", "Описание подзадачи 1",
+                Status.IN_PROGRESS, epic.getId());
+        subtask.setId(3);
     }
 
     @AfterEach
@@ -52,14 +64,8 @@ class FileBackedTaskManagerTest {
 
     @Test
     void shouldSaveAndLoadMultipleTasks() {
-        Task task = new Task("Задача 1", "Описание задачи 1", Status.NEW);
         taskManager.addTask(task);
-
-        Epic epic = new Epic("Эпик 1", "Описание эпика 1");
         taskManager.addEpic(epic);
-
-        Subtask subtask = new Subtask("Подзадача 1", "Описание подзадачи 1",
-                Status.IN_PROGRESS, epic.getId());
         taskManager.addSubtask(subtask);
 
         try {
@@ -74,30 +80,24 @@ class FileBackedTaskManagerTest {
 
         assertEquals(1, loadedManager.getListOfAllTasks().size(),
                 "Должна быть загружена одна задача");
-        assertEquals(task, loadedManager.getListOfAllTasks().get(0),
+        assertEquals(task, loadedManager.getTaskById(task.getId()),
                 "Задача загружена некорректно");
 
         assertEquals(1, loadedManager.getListOfAllEpics().size(),
                 "Должен быть загружен один эпик");
-        assertEquals(epic, loadedManager.getListOfAllEpics().get(0),
+        assertEquals(epic, loadedManager.getEpicById(epic.getId()),
                 "Эпик загружен некорректно");
 
         assertEquals(1, loadedManager.getListOfAllSubtasks().size(),
                 "Должна быть загружена одна подзадача");
-        assertEquals(subtask, loadedManager.getListOfAllSubtasks().get(0),
+        assertEquals(subtask, loadedManager.getSubtaskById(subtask.getId()),
                 "Подзадача загружена некорректно");
     }
 
     @Test
     void shouldSaveAndLoadTasksWithUpdates() {
-        Task task = new Task("Задача 1", "Описание задачи 1", Status.NEW);
         taskManager.addTask(task);
-
-        Epic epic = new Epic("Эпик 1", "Описание эпика 1");
         taskManager.addEpic(epic);
-
-        Subtask subtask = new Subtask("Подзадача 1", "Описание подзадачи 1",
-                Status.IN_PROGRESS, epic.getId());
         taskManager.addSubtask(subtask);
 
         task.setStatus(Status.DONE);
@@ -113,20 +113,20 @@ class FileBackedTaskManagerTest {
 
         assertEquals(1, loadedManager.getListOfAllTasks().size(),
                 "Должна быть загружена одна задача");
-        assertEquals(task, loadedManager.getListOfAllTasks().get(0),
+        assertEquals(task, loadedManager.getTaskById(task.getId()),
                 "Обновленная задача загружена некорректно");
 
         assertEquals(1, loadedManager.getListOfAllEpics().size(),
                 "Должен быть загружен один эпик");
-        assertEquals(epic, loadedManager.getListOfAllEpics().get(0),
+        assertEquals(epic, loadedManager.getEpicById(epic.getId()),
                 "Обновленный эпик загружен некорректно");
 
         assertEquals(1, loadedManager.getListOfAllSubtasks().size(),
                 "Должна быть загружена одна подзадача");
-        assertEquals(subtask, loadedManager.getListOfAllSubtasks().get(0),
+        assertEquals(subtask, loadedManager.getSubtaskById(subtask.getId()),
                 "Обновленная подзадача загружена некорректно");
 
-        Epic loadedEpic = loadedManager.getListOfAllEpics().get(0);
+        Epic loadedEpic = loadedManager.getEpicById(epic.getId());
         assertEquals(1, loadedEpic.getSubtasksId().size(),
                 "Эпик должен содержать одну подзадачу");
         assertTrue(loadedEpic.getSubtasksId().contains(subtask.getId()),

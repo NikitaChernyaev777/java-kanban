@@ -15,54 +15,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         this.filePath = filePath;
     }
 
-    public static void main(String[] args) {
-        Path tempFile = Path.of("tasks.csv");
-
-        FileBackedTaskManager taskManager = new FileBackedTaskManager(tempFile);
-
-        Task task1 = new Task("Задача 1", "Описание задачи 1", Status.NEW);
-        Task task2 = new Task("Задача 2", "Описание задачи 2", Status.IN_PROGRESS);
-        taskManager.addTask(task1);
-        taskManager.addTask(task2);
-
-        Epic epic1 = new Epic("Эпик 1", "Описание эпика 1");
-        Epic epic2 = new Epic("Эпик 2", "Описание эпика 2");
-        taskManager.addEpic(epic1);
-        taskManager.addEpic(epic2);
-
-        Subtask subtask1 = new Subtask("Подзадача 1", "Описание подзадачи 1",
-                Status.NEW, epic1.getId());
-        Subtask subtask2 = new Subtask("Подзадача 2", "Описание подзадачи 2",
-                Status.IN_PROGRESS, epic2.getId());
-        taskManager.addSubtask(subtask1);
-        taskManager.addSubtask(subtask2);
-
-        taskManager.save();
-
-        FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(tempFile);
-
-        System.out.println("Загруженные задачи:");
-        for (Task task : loadedManager.getListOfAllTasks()) {
-            System.out.println(task);
-        }
-
-        System.out.println("\nЗагруженные эпики:");
-        for (Epic epic : loadedManager.getListOfAllEpics()) {
-            System.out.println(epic);
-        }
-
-        System.out.println("\nЗагруженные подзадачи:");
-        for (Subtask subtask : loadedManager.getListOfAllSubtasks()) {
-            System.out.println(subtask);
-        }
-
-        assert loadedManager.getListOfAllTasks().size() == 2 : "Ошибка загрузки задач";
-        assert loadedManager.getListOfAllEpics().size() == 2 : "Ошибка загрузки эпиков";
-        assert loadedManager.getListOfAllSubtasks().size() == 2 : "Ошибка загрузки подзадач";
-        System.out.println("\nЗагрузка завершена успешно!");
-    }
-
-    void save() {
+    protected void save() {
         try {
             StringBuilder data = new StringBuilder("id,type,name,status,description,epic\n");
             for (Task task : getListOfAllTasks()) {
@@ -146,14 +99,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         try {
             List<String> lines = Files.readAllLines(file);
             for (int i = 1; i < lines.size(); i++) {
-                Task task = fromString(lines.get(i));
-                if (task instanceof Subtask) {
-                    taskManager.addSubtask((Subtask) task);
-                } else if (task instanceof Epic) {
-                    taskManager.addEpic((Epic) task);
-                } else {
-                    taskManager.addTask(task);
-                }
+                fromString(lines.get(i), taskManager);
             }
         } catch (IOException exception) {
             throw new ManagerSaveException("Ошибка загрузки из файла", exception);
@@ -184,31 +130,37 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    private static Task fromString(String value) {
+    private static void fromString(String value, FileBackedTaskManager taskManager) {
         String[] parts = value.split(",");
         int id = Integer.parseInt(parts[0]);
         Type type = Type.valueOf(parts[1]);
-        String title = parts[2];
-        Status status = Status.valueOf(parts[3]);
-        String description = parts[4];
+
         switch (type) {
-            case TASK: {
+            case TASK -> {
+                String title = parts[2];
+                Status status = Status.valueOf(parts[3]);
+                String description = parts[4];
                 Task task = new Task(title, description, status);
                 task.setId(id);
-                return task;
+                taskManager.addTask(task);
             }
-            case EPIC: {
+            case EPIC -> {
+                String title = parts[2];
+                String description = parts[4];
                 Epic epic = new Epic(title, description);
                 epic.setId(id);
-                return epic;
+                taskManager.addEpic(epic);
             }
-            case SUBTASK:
+            case SUBTASK -> {
+                String title = parts[2];
+                Status status = Status.valueOf(parts[3]);
+                String description = parts[4];
                 int epicId = Integer.parseInt(parts[5]);
                 Subtask subtask = new Subtask(title, description, status, epicId);
                 subtask.setId(id);
-                return subtask;
-            default:
-                throw new IllegalArgumentException("Неизвестны тип: " + type);
+                taskManager.addSubtask(subtask);
+            }
+            default -> throw new IllegalArgumentException("Неизвестный тип задачи: " + type);
         }
     }
 }
