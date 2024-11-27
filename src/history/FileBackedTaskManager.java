@@ -19,13 +19,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         try {
             StringBuilder data = new StringBuilder("id,type,name,status,description,epic\n");
             for (Task task : getListOfAllTasks()) {
-                data.append(toString(task)).append("\n");
+                data.append(task).append("\n");
             }
             for (Epic epic : getListOfAllEpics()) {
-                data.append(toString(epic)).append("\n");
+                data.append(epic).append("\n");
             }
             for (Subtask subtask : getListOfAllSubtasks()) {
-                data.append(toString(subtask)).append("\n");
+                data.append(subtask).append("\n");
             }
             Files.writeString(filePath, data.toString());
         } catch (IOException exception) {
@@ -105,29 +105,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             throw new ManagerSaveException("Ошибка загрузки из файла", exception);
         }
         return taskManager;
-    }
-
-    private static String toString(Task task) {
-        if (task instanceof Subtask subtask) {
-            return String.format("%d,SUBTASK,%s,%s,%s,%d",
-                    subtask.getId(),
-                    subtask.getTitle(),
-                    subtask.getStatus(),
-                    subtask.getDescription(),
-                    subtask.getEpicId());
-        } else if (task instanceof Epic) {
-            return String.format("%d,EPIC,%s,%s,%s",
-                    task.getId(),
-                    task.getTitle(),
-                    task.getStatus(),
-                    task.getDescription());
-        } else {
-            return String.format("%d,TASK,%s,%s,%s",
-                    task.getId(),
-                    task.getTitle(),
-                    task.getStatus(),
-                    task.getDescription());
-        }
     }
 
     private static void fromString(String value, FileBackedTaskManager taskManager) {
