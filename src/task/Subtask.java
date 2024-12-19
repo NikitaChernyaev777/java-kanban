@@ -18,11 +18,14 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return String.format("%d,SUBTASK,%s,%s,%s,%d",
+        return String.format("%d,SUBTASK,%s,%s,%s,%d,%d,%s,%s",
                 getId(),
                 getTitle(),
                 getStatus(),
                 getDescription(),
-                getEpicId());
+                epicId,
+                getDuration() != null ? getDuration().toMinutes() : 0,
+                getStartTime() != null ? getStartTime().toString() : "null",
+                getEndTime() != null ? getEndTime().toString() : "null");
     }
 }

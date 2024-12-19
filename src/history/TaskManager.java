@@ -40,6 +40,8 @@ public interface TaskManager {
 
     boolean removeSubtaskById(int id);
 
+    List<Task> getPrioritizedTasks();
+
     boolean updateTask(Task task);
 
     boolean updateEpic(Epic epic);
