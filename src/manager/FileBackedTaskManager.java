@@ -1,15 +1,19 @@
-package history;
+package manager;
 
 import task.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private final Path filePath;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     public FileBackedTaskManager(Path filePath) {
         this.filePath = filePath;
@@ -17,7 +21,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     protected void save() {
         try {
-            StringBuilder data = new StringBuilder("id,type,name,status,description,epic\n");
+            StringBuilder data = new StringBuilder("id,type,name,status,description,epic,duration,startTime\n");
             for (Task task : getListOfAllTasks()) {
                 data.append(task).append("\n");
             }
@@ -31,6 +35,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         } catch (IOException exception) {
             throw new ManagerSaveException("Ошибка сохранения в файл", exception);
         }
+    }
+
+    public void requestSave() {
+        save();
     }
 
     @Override
@@ -98,6 +106,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         FileBackedTaskManager taskManager = new FileBackedTaskManager(file);
         try {
             List<String> lines = Files.readAllLines(file);
+
             for (int i = 1; i < lines.size(); i++) {
                 fromString(lines.get(i), taskManager);
             }
@@ -112,29 +121,36 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         int id = Integer.parseInt(parts[0]);
         Type type = Type.valueOf(parts[1]);
 
+        String title = parts[2];
+        Status status = Status.valueOf(parts[3]);
+        String description = parts[4];
+
+        Duration duration = (parts.length > 6 && !"null".equals(parts[6]))
+                ? Duration.ofMinutes(Long.parseLong(parts[6]))
+                : null;
+        LocalDateTime startTime = (parts.length > 7 && !"null".equals(parts[7]))
+                ? LocalDateTime.parse(parts[7], FORMATTER)
+                : null;
+
         switch (type) {
             case TASK -> {
-                String title = parts[2];
-                Status status = Status.valueOf(parts[3]);
-                String description = parts[4];
                 Task task = new Task(title, description, status);
                 task.setId(id);
+                task.setDuration(duration);
+                task.setStartTime(startTime);
                 taskManager.addTask(task);
             }
             case EPIC -> {
-                String title = parts[2];
-                String description = parts[4];
                 Epic epic = new Epic(title, description);
                 epic.setId(id);
                 taskManager.addEpic(epic);
             }
             case SUBTASK -> {
-                String title = parts[2];
-                Status status = Status.valueOf(parts[3]);
-                String description = parts[4];
                 int epicId = Integer.parseInt(parts[5]);
                 Subtask subtask = new Subtask(title, description, status, epicId);
                 subtask.setId(id);
+                subtask.setDuration(duration);
+                subtask.setStartTime(startTime);
                 taskManager.addSubtask(subtask);
             }
             default -> throw new IllegalArgumentException("Неизвестный тип задачи: " + type);

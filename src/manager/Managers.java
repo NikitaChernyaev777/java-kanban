@@ -1,4 +1,4 @@
-package history;
+package manager;
 
 public class Managers {
 

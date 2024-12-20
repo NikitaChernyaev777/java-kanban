@@ -1,4 +1,4 @@
-package history;
+package manager;
 
 import task.Epic;
 import task.Subtask;
@@ -39,6 +39,8 @@ public interface TaskManager {
     boolean removeEpicById(int id);
 
     boolean removeSubtaskById(int id);
+
+    List<Task> getPrioritizedTasks();
 
     boolean updateTask(Task task);
 
