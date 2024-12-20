@@ -1,5 +1,4 @@
-package history;
-
+import manager.FileBackedTaskManager;
 import task.Epic;
 import task.Subtask;
 import task.Task;
@@ -29,7 +28,7 @@ public class Main {
         taskManager.addSubtask(subtask1);
         taskManager.addSubtask(subtask2);
 
-        taskManager.save();
+        taskManager.requestSave();
 
         FileBackedTaskManager loadedManager = FileBackedTaskManager.loadFromFile(tempFile);
 

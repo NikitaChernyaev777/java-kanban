@@ -1,4 +1,4 @@
-package history;
+package manager;
 
 import org.junit.jupiter.api.*;
 import task.*;

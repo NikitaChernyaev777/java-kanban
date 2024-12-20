@@ -1,4 +1,4 @@
-package history;
+package manager;
 
 import task.*;
 
@@ -35,6 +35,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         } catch (IOException exception) {
             throw new ManagerSaveException("Ошибка сохранения в файл", exception);
         }
+    }
+
+    public void requestSave() {
+        save();
     }
 
     @Override

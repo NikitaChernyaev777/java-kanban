@@ -1,4 +1,4 @@
-package history;
+package manager;
 
 import task.Epic;
 import task.Status;
@@ -156,8 +156,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public boolean removeTaskById(int id) {
         if (tasks.containsKey(id)) {
-            Task remobedTask = tasks.remove(id);
-            prioritizedTasks.remove(remobedTask);
+            Task removedTask = tasks.remove(id);
+            prioritizedTasks.remove(removedTask);
             historyManager.remove(id);
             return true;
         }
@@ -205,9 +205,8 @@ public class InMemoryTaskManager implements TaskManager {
             tasks.put(task.getId(), task);
             validateAndAddToPrioritizedTasks(task);
             return true;
-        } else {
-            throw new IllegalArgumentException("Задача с таким ID не существует");
         }
+        return false;
     }
 
     @Override
