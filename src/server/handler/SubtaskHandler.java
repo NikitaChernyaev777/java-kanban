@@ -1,25 +1,29 @@
-package server;
+package server.handler;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import manager.TaskManager;
-import task.Task;
+import server.adapter.DurationAdapter;
+import server.adapter.LocalDateTimeAdapter;
+import task.Subtask;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
-public class TaskHandler extends BaseHttpHandler {
+public class SubtaskHandler extends BaseHttpHandler {
     private final TaskManager taskManager;
     private final Gson gson;
 
-    public TaskHandler(TaskManager taskManager) {
+    public SubtaskHandler(TaskManager taskManager) {
         this.taskManager = taskManager;
         this.gson = new GsonBuilder()
-                .registerTypeAdapter(java.time.LocalDateTime.class, new LocalDateTimeAdapter())
-                .registerTypeAdapter(java.time.Duration.class, new DurationAdapter())
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                .registerTypeAdapter(Duration.class, new DurationAdapter())
                 .create();
     }
 
@@ -31,33 +35,36 @@ public class TaskHandler extends BaseHttpHandler {
 
         try {
             if (method.equals("GET") && pathParts.length == 2) {
-                List<Task> tasks = taskManager.getListOfAllTasks();
-                sendResponse(exchange, gson.toJson(tasks), 200);
+                List<Subtask> subtasks = taskManager.getListOfAllSubtasks();
+                sendResponse(exchange, gson.toJson(subtasks), 200);
             } else if (method.equals("GET") && pathParts.length == 3) {
                 int id = Integer.parseInt(pathParts[2]);
-                Task task = taskManager.getTaskById(id);
-                if (task != null) {
-                    sendResponse(exchange, gson.toJson(task), 200);
+                Subtask subtask = taskManager.getSubtaskById(id);
+                if (subtask != null) {
+                    sendResponse(exchange, gson.toJson(subtask), 200);
                 } else {
                     sendNotFound(exchange);
                 }
             } else if (method.equals("POST") && pathParts.length == 2) {
                 InputStream inputStream = exchange.getRequestBody();
                 String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                Task task = gson.fromJson(body, Task.class);
+                Subtask subtask = gson.fromJson(body, Subtask.class);
 
-                if (task.getId() == 0) {
-                    taskManager.addTask(task);
-                    sendResponse(exchange, gson.toJson(task), 201);
-                } else if (taskManager.updateTask(task)) {
-                    sendResponse(exchange, gson.toJson(task), 201);
+                if (subtask.getId() == 0) {
+                    if (taskManager.addSubtask(subtask)) {
+                        sendResponse(exchange, gson.toJson(subtask), 201);
+                    } else {
+                        sendHasInteractions(exchange);
+                    }
+                } else if (taskManager.updateSubtask(subtask)) {
+                    sendResponse(exchange, gson.toJson(subtask), 201);
                 } else {
                     sendHasInteractions(exchange);
                 }
             } else if (method.equals("DELETE") && pathParts.length == 3) {
                 int id = Integer.parseInt(pathParts[2]);
-                if (taskManager.removeTaskById(id)) {
-                    sendResponse(exchange, "{\"status\":\"Task deleted\"}", 200);
+                if (taskManager.removeSubtaskById(id)) {
+                    sendResponse(exchange, "{\"status\":\"Subtask deleted\"}", 200);
                 } else {
                     sendNotFound(exchange);
                 }
@@ -65,7 +72,6 @@ public class TaskHandler extends BaseHttpHandler {
                 sendNotFound(exchange);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             sendServerError(exchange);
         }
     }

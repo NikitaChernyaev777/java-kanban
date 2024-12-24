@@ -1,7 +1,8 @@
-package server;
+package server.adapter;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
@@ -13,11 +14,19 @@ public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
 
     @Override
     public void write(JsonWriter out, LocalDateTime value) throws IOException {
-        out.value(value.format(FORMATTER));
+        if (value == null) {
+            out.nullValue();
+        } else {
+            out.value(value.format(FORMATTER));
+        }
     }
 
     @Override
     public LocalDateTime read(JsonReader in) throws IOException {
+        if (in.peek() == JsonToken.NULL) {
+            in.nextNull();
+            return null;
+        }
         return LocalDateTime.parse(in.nextString(), FORMATTER);
     }
 }

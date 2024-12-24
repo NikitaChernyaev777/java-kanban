@@ -17,7 +17,7 @@ class InMemoryHistoryManagerTest {
     @BeforeEach
     void setUp() {
         historyManager = Managers.getDefaultHistory();
-        task1 = new Task("Задача 1", "Описание задачи b1", Status.NEW);
+        task1 = new Task("Задача 1", "Описание задачи 1", Status.NEW);
         task1.setId(1);
         task2 = new Task("Задача 2", "Описание задачи 2", Status.NEW);
         task2.setId(2);
